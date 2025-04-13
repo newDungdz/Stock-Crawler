@@ -5,9 +5,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-from supabase import create_client, Client
 import random
 import logging
+import json
 
 # Setup Chrome
 chrome_options = Options()
@@ -35,28 +35,31 @@ logging.basicConfig(
 
 # In-memory set of all seen links
 seen_links = set()
+import json
+import os
 
-def insert_with_retries(data, max_retries=3):
-    for attempt in range(max_retries):
-        try:
-            response = supabase.table("stock_article_links").insert(data).execute()
-            if not response.data:
-                if "duplicate key value" in str(response.error).lower():
-                    logging.warning(f"Duplicate key value conflict detected. Skipping insertion.")
-                    return None
-                raise Exception(response.error)
-            return response.data
-        except Exception as e:
-            # Extract error message for duplicate key check
-            err_msg = str(e)
-            if "23505" in err_msg and "duplicate key value violates unique constraint" in err_msg:
-                logging.warning(f"Duplicate key detected. Skipping this batch.")
-                return None  # Don't retry on duplicate
-            else:
-                logging.warning(f"Insertion attempt {attempt+1} failed: {e}")
-                time.sleep(2 * (attempt + 1))  # Exponential backoff
-    logging.error("Max retries reached. Skipping insertion.")
-    return None
+def save_articles_to_json(new_articles, filename='link.json'):
+    # Check if file exists and load existing data
+    if os.path.exists(filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            try:
+                existing_data = json.load(f)
+            except json.JSONDecodeError:
+                existing_data = []
+    else:
+        existing_data = []
+
+    # Append only new links
+    links_seen = set(article['link'] for article in existing_data)
+    filtered_articles = [a for a in new_articles if a['link'] not in links_seen]
+
+    # Append new items
+    existing_data.extend(filtered_articles)
+
+    # Save back to file
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(existing_data, f, indent=2, ensure_ascii=False)
+
 
 def change_page(driver, page_number):
     try:
@@ -98,10 +101,10 @@ def scrape_data(driver, page_number):
         print(f"Error while scraping: {e}")
     return articles
 
-supabase_url = "https://ezwvfhlfykfdfrnbdcwo.supabase.co"
-supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6d3ZmaGxmeWtmZGZybmJkY3dvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDE2MDQyMywiZXhwIjoyMDU5NzM2NDIzfQ.m1yRubO6kiaFUAAduIX9SEQa2MqA5ASa4lvaisSEUAU"
-supabase: Client = create_client(supabase_url, supabase_key)
-# Create or connect to the table
+# File to store the scraped data
+output_file = "link.json"
+with open(output_file, "a", encoding="utf-8") as f:
+    f.write("") # reset link.json file
 
 # Page loop
 i = 1
@@ -110,8 +113,8 @@ MAX_SCRAPE_FAILURES = 5
 MAX_FAILURES = 5
 
 try:
+    article_id = 1  # Initialize article ID
     while True:
-        # if i > 2: break
         if i > 1:
             change_page(driver, i)
             logging.info(f"Changed to page {i}")
@@ -140,16 +143,16 @@ try:
         if not page_data:
             logging.info(f"No new articles found on page {i}. Possibly end of new content.")
             break
-        logging.info(f"Crawl {len(page_data)} article on page {i}")
 
-        # Insert and mark as seen
-        result = insert_with_retries(page_data)
-        if result:
-            for article in page_data:
-                seen_links.add(article["link"])
-            logging.info(f"Inserted {len(result)} new articles into Supabase.")
-        else:
-            logging.warning("No articles inserted this round.")
+        # Add incremented ID to each article
+        for article in page_data:
+            article['id'] = article_id
+            article_id += 1
+
+        logging.info(f"Crawl {len(page_data)} article on page {i}")
+        
+        # Save to JSON file
+        save_articles_to_json(page_data)
         i += 1
 except Exception as e:
     logging.exception(f"Unexpected error: {e}")

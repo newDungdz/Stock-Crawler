@@ -103,7 +103,7 @@ def scrape_data(driver, page_number):
 
 # File to store the scraped data
 output_file = "link.json"
-with open(output_file, "a", encoding="utf-8") as f:
+with open(output_file, "w+", encoding="utf-8") as f:
     f.write("") # reset link.json file
 
 # Page loop

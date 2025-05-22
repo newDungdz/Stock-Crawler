@@ -1,0 +1,8 @@
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./test_data:/app/data
+    working_dir: /app

@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementClickInterceptedException, StaleElementReferenceException
 
-def scrape_links(url, max_clicks=20):
+def scrape_links_tinnhanh(url, max_clicks=20):
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Uncomment to run headless
     chrome_options.add_argument("--disable-gpu")
@@ -108,21 +108,15 @@ def scrape_links(url, max_clicks=20):
             driver.quit()
             print("Đã đóng trình duyệt.")
 
-    if extracted_data:
-        try:
-            with open('link.json', 'w', encoding='utf-8') as f:
-                json.dump(extracted_data, f, ensure_ascii=False, indent=4)
-            print(f"Đã lưu {len(extracted_data)} cặp ID/đường dẫn vào file link.json")
-        except IOError as e:
-            print(f"Lỗi khi ghi file JSON: {e}")
-    else:
-        print("Không có dữ liệu nào được trích xuất để lưu vào file JSON.")
+    return extracted_data
 
 # --- Sử dụng hàm ---
-target_url = "https://www.tinnhanhchungkhoan.vn/chung-khoan/"
-number_of_clicks = 500
+if __name__ == "__main__":
+    target_url = "https://www.tinnhanhchungkhoan.vn/chung-khoan/"
+    number_of_clicks = 1
+    link_data = scrape_links_tinnhanh(target_url, max_clicks=number_of_clicks)
+    print(link_data)
 
-if target_url == "YOUR_WEBSITE_URL_HERE":
-    print("Vui lòng thay thế 'YOUR_WEBSITE_URL_HERE' bằng URL thực tế của trang web bạn muốn quét.")
-else:
-    scrape_links(target_url, max_clicks=number_of_clicks)
+    # with open('link.json', 'w', encoding='utf-8') as f:
+    #     json.dump(extracted_data, f, ensure_ascii=False, indent=4)
+    # print(f"Đã lưu {len(extracted_data)} cặp ID/đường dẫn vào file link.json")

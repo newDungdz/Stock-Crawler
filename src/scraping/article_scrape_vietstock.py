@@ -96,7 +96,11 @@ def scrape_article_vietstock(link_data, limit=-1):
             logging.info("Reached the processing limit.")
             break
         logging.info(f"Processing article: {data['link']}")
-        all_data.append(get_article_info(data['link']))
+        try:
+            all_data.append(get_article_info(data['link']))
+        except Exception as e:
+            logging.error(f"Error processing {data['link']}: {e}")
+            continue    
         processed_count += 1
     return all_data
 

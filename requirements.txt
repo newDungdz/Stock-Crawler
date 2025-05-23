@@ -4,3 +4,4 @@ beautifulsoup4==4.12.3
 vnstock
 pandas
 tqdm
+apscheduler

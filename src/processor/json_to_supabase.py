@@ -26,10 +26,10 @@ def parse_date(date_str):
         return date_str
 
 def is_valid_row(row):
-    # Skip row if 'create_date' is empty or invalid
-    if 'create_date' not in row or not row['create_date'].strip():
+    # Skip row if 'date' is empty or invalid
+    if 'date' not in row or not row['date'].strip():
         return False
-    if parse_date(row['create_date']) is None:
+    if parse_date(row['date']) is None:
         return False
     return True
 

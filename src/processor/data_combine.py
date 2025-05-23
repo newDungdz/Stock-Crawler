@@ -20,7 +20,7 @@ combined_data = data1 + data2
 
 def parse_date(item):
     try:
-        return datetime.strptime(item['create_date'], '%d/%m/%Y %H:%M')
+        return datetime.strptime(item['date'], '%d/%m/%Y %H:%M')
     except ValueError:
         return datetime.min  # Handle invalid dates by assigning the earliest possible date
 

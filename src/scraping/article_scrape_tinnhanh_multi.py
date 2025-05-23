@@ -61,7 +61,7 @@ def get_article_info(args):
                 return {
                     "title": title,
                     "link": url,
-                    "create_date": date,
+                    "date": date,
                     "text": article_text
                 }
             elif response.status_code in [403, 429]:

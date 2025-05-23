@@ -23,7 +23,7 @@ def run_crawler():
     print(all_articles)
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     df = pd.DataFrame(all_articles)
-    article_path = os.path.join(output_dir, f"articles_{timestamp}.json")
+    article_path = os.path.join(output_dir, f"articles_{timestamp}.csv")
     df.to_csv(article_path, index=False)
     print(f"Data saved to articles_{timestamp}.csv")
 

@@ -83,7 +83,7 @@ def scrape_article_vietstock(link_data, limit=-1):
             return {
                 "title": title,
                 "link": url,
-                "create_date": date,
+                "date": date,
                 "text": article_text
             }
 
